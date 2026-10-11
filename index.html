@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pocket Cinema</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: #0f172a;
+            color: #f8fafc;
+            margin: 0;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 { font-size: 1.5rem; margin-bottom: 4px; color: #38bdf8; }
+        p.subtitle { font-size: 0.85rem; color: #94a3b8; margin-bottom: 20px; }
+        .container { width: 100%; max-width: 800px; }
+        video {
+            width: 100%;
+            max-height: 50vh;
+            background: #000;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            outline: none;
+        }
+        .playlist {
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .movie-btn {
+            background: #1e293b;
+            color: #f8fafc;
+            border: 1px solid #334155;
+            padding: 14px 18px;
+            text-align: left;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.2s;
+        }
+        .movie-btn:active, .movie-btn:hover {
+            background: #0284c7;
+            border-color: #0ea5e9;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Pocket Cinema 🎬</h1>
+    <p class="subtitle">Passwordless Stream</p>
+    
+    <!-- Video Player Element -->
+    <video id="videoPlayer" controls playsinline preload="metadata">
+        Your browser does not support video streaming.
+    </video>
+
+    <!-- Playlist Buttons -->
+    <div class="playlist" id="playlist">
+        <!-- ADD YOUR MOVIES HERE: Replace the FILE_ID and Movie Title -->
+        <button class="movie-btn" onclick="playMovie('1AbCdeFGhijKLMnOP', 'Sample Movie Title 1')">▶ Sample Movie Title 1</button>
+        <button class="movie-btn" onclick="playMovie('ANOTHER_FILE_ID_HERE', 'Sample Movie Title 2')">▶ Sample Movie Title 2</button>
+    </div>
+</div>
+
+<script>
+    function playMovie(fileId, title) {
+        const player = document.getElementById('videoPlayer');
+        // Google Drive direct stream workaround URL
+        player.src = `https://docs.google.com/uc?export=download&id=${fileId}`;
+        player.load();
+        player.play().catch(error => {
+            console.log("Autoplay blocked or stream loading error:", error);
+        });
+    }
+</script>
+
+</body>
+</html>
