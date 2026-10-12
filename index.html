@@ -3,80 +3,258 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pocket Cinema</title>
+    <title>Pocket Cinema Dashboard</title>
     <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --card-border: #334155;
+            --accent: #38bdf8;
+            --accent-hover: #0284c7;
+            --text-main: #f8fafc;
+            --text-sub: #94a3b8;
+        }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background-color: #0f172a;
-            color: #f8fafc;
+            background-color: var(--bg-color);
+            color: var(--text-main);
             margin: 0;
             padding: 16px;
             display: flex;
             flex-direction: column;
             align-items: center;
         }
-        h1 { font-size: 1.5rem; margin-bottom: 4px; color: #38bdf8; }
-        p.subtitle { font-size: 0.85rem; color: #94a3b8; margin-bottom: 20px; }
-        .container { width: 100%; max-width: 800px; }
+        .container { width: 100%; max-width: 850px; }
+        
+        /* Video Player Styling */
+        .player-wrapper {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: var(--bg-color);
+            padding-bottom: 10px;
+        }
         video {
             width: 100%;
-            max-height: 50vh;
+            max-height: 45vh;
             background: #000;
             border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.6);
             outline: none;
         }
-        .playlist {
-            margin-top: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
+        .now-playing {
+            font-size: 0.9rem;
+            color: var(--accent);
+            margin-top: 8px;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
-        .movie-btn {
-            background: #1e293b;
-            color: #f8fafc;
-            border: 1px solid #334155;
-            padding: 14px 18px;
-            text-align: left;
+
+        /* Dashboard Header */
+        h1 { font-size: 1.4rem; margin: 10px 0 2px 0; color: var(--accent); }
+        p.subtitle { font-size: 0.8rem; color: var(--text-sub); margin-bottom: 16px; }
+
+        /* Main Tabs / Category Buttons */
+        .main-tabs {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        .tab-btn {
+            background: var(--card-bg);
+            color: var(--text-main);
+            border: 1px solid var(--card-border);
+            padding: 12px 8px;
+            text-align: center;
             border-radius: 8px;
             cursor: pointer;
-            font-size: 1rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .tab-btn.active {
+            background: var(--accent-hover);
+            border-color: var(--accent);
+        }
+
+        /* Content Sections */
+        .section-content { display: none; }
+        .section-content.active { display: block; }
+
+        /* Accordion / Sub-category styling */
+        .sub-group {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            margin-bottom: 10px;
+            overflow: hidden;
+        }
+        .sub-header {
+            padding: 14px 16px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255,255,255,0.02);
+        }
+        .sub-header:hover { background: rgba(255,255,255,0.05); }
+        .sub-body {
+            padding: 8px 12px;
+            display: none;
+            border-top: 1px solid var(--card-border);
+            flex-direction: column;
+            gap: 6px;
+        }
+        .sub-group.open .sub-body { display: flex; }
+        .sub-group.open .arrow { transform: rotate(90deg); }
+        .arrow { transition: transform 0.2s; font-size: 0.8rem; color: var(--text-sub); }
+
+        /* Item Selection Buttons */
+        .media-btn {
+            background: rgba(15, 23, 42, 0.6);
+            color: var(--text-main);
+            border: 1px solid var(--card-border);
+            padding: 12px 14px;
+            text-align: left;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
             transition: background 0.2s;
         }
-        .movie-btn:active, .movie-btn:hover {
-            background: #0284c7;
-            border-color: #0ea5e9;
+        .media-btn:active, .media-btn:hover {
+            background: var(--accent-hover);
+            border-color: var(--accent);
         }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>Pocket Cinema 🎬</h1>
-    <p class="subtitle">Passwordless Stream</p>
-    
-    <!-- Video Player Element -->
-    <video id="videoPlayer" controls playsinline preload="metadata">
-        Your browser does not support video streaming.
-    </video>
+    <!-- Sticky Video Player at Top -->
+    <div class="player-wrapper">
+        <video id="videoPlayer" controls playsinline preload="metadata">
+            Your browser does not support video streaming.
+        </video>
+        <div class="now-playing" id="nowPlayingText">Select a media file below to start streaming 🎬</div>
+    </div>
 
-    <!-- Playlist Buttons -->
-    <div class="playlist" id="playlist">
-        <!-- ADD YOUR MOVIES HERE: Replace the FILE_ID and Movie Title -->
-        <button class="movie-btn" onclick="playMovie('1AbCdeFGhijKLMnOP', 'Sample Movie Title 1')">▶ Sample Movie Title 1</button>
-        <button class="movie-btn" onclick="playMovie('ANOTHER_FILE_ID_HERE', 'Sample Movie Title 2')">▶ Sample Movie Title 2</button>
+    <h1>Pocket Cinema - by Angry Adza</h1>
+    <p class="subtitle">Secure Partner Stream (Cloudflare R2)</p>
+
+    <!-- 3 Main Categories Tabs -->
+    <div class="main-tabs">
+        <button class="tab-btn active" onclick="switchCategory('movies', this)">🎬 Movies</button>
+        <button class="tab-btn" onclick="switchCategory('tv', this)">📺 TV Series</button>
+        <button class="tab-btn" onclick="switchCategory('music', this)">🎵 Music TV</button>
+    </div>
+
+    <!-- CATEGORY 1: BLOCKBUSTER MOVIES -->
+    <div id="movies" class="section-content active">
+        <div class="sub-body" style="display: flex; gap: 8px;">
+            <!-- REPLACE URLS & TITLES WITH YOUR R2 LINKS -->
+            <button class="media-btn" onclick="playMedia('https://pub-264fe1b907024ea6946cc48275ccc709.r2.dev/Movies/Coyote.Vs.Acme.2026.mp4', 'Coyote Vs Acme (2026)')">▶ Coyote Vs Acme</button>
+            <button class="media-btn" onclick="playMedia('https://pub-264fe1b907024ea6946cc48275ccc709.r2.dev/Movies/Toy.Story.5.2026.mp4', 'Toy Story 5 (2026)')">▶ Toy Story 5</button>
+        </div>
+    </div>
+
+    <!-- CATEGORY 2: TV SERIES (WITH SEASON SUB-CATEGORIES) -->
+    <div id="tv" class="section-content">
+        <!-- Series Title Example -->
+        <div class="sub-group">
+            <div class="sub-header" onclick="toggleSub(this)">
+                <span>The 3 Stooges</span>
+                <span class="arrow">▶</span>
+            </div>
+            <div class="sub-body">
+                <!-- Season Sub-category breakdown -->
+                <div style="font-size: 0.8rem; color: var(--accent); font-weight: bold; margin-top: 4px;">Season 1</div>
+                <button class="media-btn" onclick="playMedia("https://pub-264fe1b907024ea6946cc48275ccc709.r2.dev/TV_Shows/The%203%20Stooges/Season%201/001%20-%20Woman%20Haters%20(1934).mp4', 'S01E01 - Woman Haters')">▶ S01E01 - Woman Haters</button>
+                <button class="media-btn" onclick="playMedia('https://pub-264fe1b907024ea6946cc48275ccc709.r2.dev/TV_Shows/The%203%20Stooges/Season%201/002%20-%20Punch%20Drunks%20(1934).mp4', 'S01E02 Punch Drunks- ')">▶ S01E02 - Punch Drunks</button>
+				<button class="media-btn" onclick="playMedia('https://pub-xxxxxxxx.r2.dev/Breaking.Bad.S01E01.mp4', 'S01E03 - ')">▶ S01E03 - </button>
+                <button class="media-btn" onclick="playMedia('https://pub-xxxxxxxx.r2.dev/Breaking.Bad.S01E02.mp4', 'S01E04 - ')">▶ S01E04 - </button>
+                
+                <div style="font-size: 0.8rem; color: var(--accent); font-weight: bold; margin-top: 8px;">Season 2</div>
+                <button class="media-btn" onclick="playMedia('https://pub-xxxxxxxx.r2.dev/Breaking.Bad.S02E01.mp4', 'S02E01 - ')">▶ S02E01 - </button>
+				<button class="media-btn" onclick="playMedia('https://pub-xxxxxxxx.r2.dev/Breaking.Bad.S01E02.mp4', 'S02E02 - ')">▶ S02E02 - </button>
+				<button class="media-btn" onclick="playMedia('https://pub-xxxxxxxx.r2.dev/Breaking.Bad.S01E01.mp4', 'S02E03 - ')">▶ S02E03 - </button>
+                <button class="media-btn" onclick="playMedia('https://pub-xxxxxxxx.r2.dev/Breaking.Bad.S01E02.mp4', 'S03E04 - ')">▶ S02E04 - </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CATEGORY 3: MUSIC VIDEOS (GROUPED BY ARTIST) -->
+    <div id="music" class="section-content">
+        <!-- Artist Group Example -->
+        <div class="sub-group">
+            <div class="sub-header" onclick="toggleSub(this)">
+                <span>Prince</span>
+                <span class="arrow">▶</span>
+            </div>
+            <div class="sub-body">
+                <button class="media-btn" onclick="playMedia('https://pub-264fe1b907024ea6946cc48275ccc709.r2.dev/Music_Videos/Prince/Erotic%20City%20(Make%20Love%20Not%20War%20Erotic%20City%20Come%20Alive)%20(Extend_y_B18NVC5xuiE.mp4', 'Erotic City')">▶ Erotic City</button>
+                <button class="media-btn" onclick="playMedia('https://pub-264fe1b907024ea6946cc48275ccc709.r2.dev/Music_Videos/Prince/Prince%20-%20Purple%20Rain%20(Official%20Video)_y_TvnYmWpD_T8.mp4', 'Purple Rain - Official')">▶ Purple Rain</button>
+            </div>
+        </div>
+		
+		<div class="sub-group">
+            <div class="sub-header" onclick="toggleSub(this)">
+                <span>Michael Jackson</span>
+                <span class="arrow">▶</span>
+            </div>
+            <div class="sub-body">
+                <button class="media-btn" onclick="playMedia('https://pub-264fe1b907024ea6946cc48275ccc709.r2.dev/Music_Videos/Michael%20Jackson/Michael%20Jackson%20-%20Thriller%20(Official%204K%20Video).mp4', 'Thriller - Official')">▶ Thriller</button>
+                <button class="media-btn" onclick="playMedia('https://pub-xxxxxxxx.r2.dev/Daft.Punk.One.More.Time.mp4', 'Jam')">▶ Jam</button>
+            </div>
+        </div>
+
+        <div class="sub-group">
+            <div class="sub-header" onclick="toggleSub(this)">
+                <span>Queen</span>
+                <span class="arrow">▶</span>
+            </div>
+            <div class="sub-body">
+                <button class="media-btn" onclick="playMedia('https://pub-xxxxxxxx.r2.dev/Queen.Bohemian.Rhapsody.mp4', 'Bohemian Rhapsody')">▶ Bohemian Rhapsody</button>
+            </div>
+        </div>
     </div>
 </div>
 
 <script>
-    function playMovie(fileId, title) {
+    // Switch between Main Tabs (Movies, TV, Music)
+    function switchCategory(categoryId, btnElement) {
+        document.querySelectorAll('.section-content').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+        
+        document.getElementById(categoryId).classList.add('active');
+        btnElement.classList.add('active');
+    }
+
+    // Toggle TV Show / Artist Accordion Dropdowns
+    function toggleSub(headerElement) {
+        const group = headerElement.parentElement;
+        group.classList.toggle('open');
+    }
+
+    // Play Selected Video
+    function playMedia(videoUrl, title) {
         const player = document.getElementById('videoPlayer');
-        // Google Drive direct stream workaround URL
-        player.src = `https://docs.google.com/uc?export=download&id=${fileId}`;
+        const textLabel = document.getElementById('nowPlayingText');
+        
+        player.src = videoUrl;
         player.load();
         player.play().catch(error => {
-            console.log("Autoplay blocked or stream loading error:", error);
+            console.log("Autoplay restriction prevented auto-start:", error);
         });
+
+        textLabel.textContent = "▶ Now Playing: " + title;
+        
+        // Smooth scroll back to top player on mobile when a video is tapped
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 </script>
 
